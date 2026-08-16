@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emoji Particles</title>
+    <meta
+      name="description"
+      content="Type an emoji and it becomes a field of particles you can push around."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%91%8B</text></svg>"
+    />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Emoji Particles</h1>
+        <p>Type an emoji, then push it around.</p>
+      </header>
+
+      <div id="stage">
+        <canvas id="canvas"></canvas>
+        <p id="empty" hidden>That one has nothing to draw. Try another.</p>
+      </div>
+
+      <div class="controls">
+        <input
+          id="input"
+          type="text"
+          value="👋"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          aria-label="Emoji to render"
+        />
+        <button id="shuffle" type="button">Shuffle</button>
+        <button id="mode" type="button" aria-pressed="true">Pull</button>
+      </div>
+
+      <p class="count"><span id="count">0</span> particles</p>
+    </main>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
