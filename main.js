@@ -7,7 +7,7 @@ const SITE = {
   sample: 4,
   dot: 3.5,
   radius: 60,
-  strength: 1, // site runs -1 (attract); the toggle owns the sign here
+  strength: 2.5, // site runs -1; pushed up here since the stage invites dragging
   spring: 0.08,
   friction: 0.9,
 };
@@ -34,6 +34,7 @@ const SHUFFLE = [
   '👋', '🌻', '🍄', '🐙', '🦋', '🍉', '🌈', '🔥', '🪐', '🐝',
   '🍋', '🐬', '🌵', '🎈', '🧊', '🍄‍🟫', '🦩', '🌙', '🍊', '🐳',
   '🌼', '🫐', '🦚', '🍁', '⚡', '🐌', '🌺', '🍇', '🐠', '🪴',
+  '❤️', '👻', '❄️', '🍭', '🥬', '🥐', '🏈', '🍓', '🌶️', '🪷'
 ];
 
 const canvas = document.getElementById('canvas');
