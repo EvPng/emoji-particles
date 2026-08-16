@@ -44,3 +44,7 @@ python3 -m http.server 8000
 ## Notes
 
 Emoji are drawn with the system emoji font, so the same input looks different on macOS, Windows, and Android. Rendering them identically everywhere would mean shipping a colour emoji font, which is around 10 MB.
+
+## License
+
+MIT. `particles.js` has no dependencies and no framework, so it can be lifted into another project on its own.

@@ -1,5 +1,7 @@
 // Framework-agnostic particle field sampled from a rendered glyph.
 //
+// MIT licensed. https://github.com/EvPng/emoji-particles
+//
 // The glyph is drawn to an offscreen canvas, sampled on a grid, and every
 // opaque cell becomes a particle that remembers where it came from and springs
 // back to it. Colour is read from the same sample, which is what makes emoji
