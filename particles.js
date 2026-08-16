@@ -64,44 +64,69 @@ export function buildField(glyph, width, height, sample, maxParticles, seedFrom)
 
   const data = o.getImageData(0, 0, SOURCE, SOURCE).data;
 
-  let step = Math.max(1, Math.round(sample));
-  let ink = 0;
-  for (let y = 0; y < SOURCE; y += step) {
-    for (let x = 0; x < SOURCE; x += step) {
-      if (data[(y * SOURCE + x) * 4 + 3] > ALPHA_CUTOFF) ink++;
-    }
-  }
-  if (ink === 0) return { particles: [], runs: [], spacing: step };
-  if (ink > maxParticles) {
-    // Count scales as 1/step^2, so this lands within one step of the ceiling.
-    step = Math.ceil(step * Math.sqrt(ink / maxParticles));
-  }
-
-  // Collect in source space first, so the ink bounding box can be measured
-  // before anything is placed on the stage.
-  const cells = [];
+  // Ink bounds at full resolution. Measuring them on the sample grid instead
+  // would miss whatever ink falls between grid lines, by a different amount on
+  // each side and a different amount per glyph.
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let y = 0; y < SOURCE; y += step) {
-    for (let x = 0; x < SOURCE; x += step) {
-      const i = (y * SOURCE + x) * 4;
-      if (data[i + 3] <= ALPHA_CUTOFF) continue;
-      cells.push({ x, y, r: data[i], g: data[i + 1], b: data[i + 2] });
+  for (let y = 0; y < SOURCE; y++) {
+    for (let x = 0; x < SOURCE; x++) {
+      if (data[(y * SOURCE + x) * 4 + 3] <= ALPHA_CUTOFF) continue;
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
     }
   }
+  if (maxX < minX) return { particles: [], runs: [], spacing: sample };
 
-  // Fit the ink to the stage and centre it. Centring on the sampled bounding
-  // box rather than on the draw call matters because emoji glyph metrics vary,
-  // and textBaseline 'middle' leaves several of them visibly off-centre.
-  const inkW = maxX - minX + step;
-  const inkH = maxY - minY + step;
-  const scale = Math.min(width / SOURCE, height / SOURCE) * (SOURCE / Math.max(inkW, inkH)) * 0.82;
+  const inkW = maxX - minX + 1;
+  const inkH = maxY - minY + 1;
+
+  // Phase the grid so the remainder that does not divide evenly into the ink is
+  // split between both sides, keeping the sampled cells symmetric within it.
+  const phase = (min, span, s) => min + Math.floor(((span - 1) % s) / 2);
+
+  const collect = (s, into) => {
+    let n = 0;
+    for (let y = phase(minY, inkH, s); y <= maxY; y += s) {
+      for (let x = phase(minX, inkW, s); x <= maxX; x += s) {
+        const i = (y * SOURCE + x) * 4;
+        if (data[i + 3] <= ALPHA_CUTOFF) continue;
+        n++;
+        if (into) into.push({ x, y, r: data[i], g: data[i + 1], b: data[i + 2] });
+      }
+    }
+    return n;
+  };
+
+  let step = Math.max(1, Math.round(sample));
+  const ink = collect(step, null);
+  if (ink > maxParticles) {
+    // Count scales as 1/step^2, so this lands within one step of the ceiling.
+    step = Math.ceil(step * Math.sqrt(ink / maxParticles));
+  }
+
+  const cells = [];
+  collect(step, cells);
+
+  // Scale from the ink, but centre on the cells that were actually sampled.
+  // Point sampling misses thin features such as the petal tips on 🌻, so the
+  // dots can sit inside the ink by a different margin on each side. Centring
+  // the ink would leave that difference visible; centring what gets drawn
+  // cannot, and the dot's half width cancels from both edges.
+  let cMinX = Infinity, cMinY = Infinity, cMaxX = -Infinity, cMaxY = -Infinity;
+  for (const c of cells) {
+    if (c.x < cMinX) cMinX = c.x;
+    if (c.x > cMaxX) cMaxX = c.x;
+    if (c.y < cMinY) cMinY = c.y;
+    if (c.y > cMaxY) cMaxY = c.y;
+  }
+
+  const scale =
+    Math.min(width / SOURCE, height / SOURCE) * (SOURCE / Math.max(inkW, inkH)) * 0.82;
   const spacing = step * scale;
-  const originX = (width - inkW * scale) / 2 - minX * scale;
-  const originY = (height - inkH * scale) / 2 - minY * scale;
+  const originX = width / 2 - ((cMinX + cMaxX) / 2) * scale;
+  const originY = height / 2 - ((cMinY + cMaxY) / 2) * scale;
 
   const particles = cells.map((c) => {
     const hx = c.x * scale + originX;
