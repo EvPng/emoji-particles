@@ -1,4 +1,4 @@
-import { buildField, simulate, draw, firstGrapheme } from './particles.js';
+import { buildField, simulate, draw, firstGrapheme, graphemes } from './particles.js';
 
 // dot sits at 0.7x the grid spacing, which is what reads as chunky pixels
 // rather than a smooth image. The two scale together.
@@ -100,7 +100,17 @@ stage.addEventListener('pointerleave', () => {
 // Dragging on a touch screen should push particles, not scroll the page.
 stage.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-input.addEventListener('input', () => setGlyph(input.value));
+// Hold the field to a single grapheme. maxlength cannot do this: it counts
+// UTF-16 code units, so it would cut 👋 in half and shred longer sequences.
+// The newest grapheme wins, so typing another emoji replaces the current one
+// instead of being ignored.
+input.addEventListener('input', () => {
+  const parts = graphemes(input.value);
+  if (!parts.length) return; // let the field be cleared
+  const g = parts[parts.length - 1];
+  if (input.value !== g) input.value = g;
+  setGlyph(g);
+});
 
 shuffleBtn.addEventListener('click', () => {
   let next = glyph;
