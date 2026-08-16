@@ -23,7 +23,7 @@ const SOURCE = 160;
 /**
  * Split a string into user-perceived characters. Array.from would split by code
  * point, which shatters skin-tone modifiers (👋🏽), ZWJ sequences (👨‍👩‍👧‍👦),
- * and flags (🇯🇵) into their meaningless parts.
+ * and flags (🇺🇳) into their meaningless parts.
  */
 export function graphemes(str) {
   if (typeof Intl !== 'undefined' && Intl.Segmenter) {

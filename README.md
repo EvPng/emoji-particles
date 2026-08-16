@@ -16,7 +16,7 @@ Four things in the implementation are worth naming.
 
 **Density is set in source-glyph space, not by a particle budget.** The dot is drawn at 0.7x the grid spacing, and that ratio is what reads as chunky pixels instead of a smooth image. Deriving spacing from a particle count would make the texture change with the size of the stage.
 
-**Input is split by grapheme.** `Array.from` splits by code point, which shatters skin-tone modifiers (👋🏽), ZWJ sequences (👨‍👩‍👧‍👦), and flags (🇯🇵) into meaningless parts. `Intl.Segmenter` keeps them whole.
+**Input is split by grapheme.** `Array.from` splits by code point, which shatters skin-tone modifiers (👋🏽), ZWJ sequences (👨‍👩‍👧‍👦), and flags (🇺🇳) into meaningless parts. `Intl.Segmenter` keeps them whole.
 
 ## Tuning
 
