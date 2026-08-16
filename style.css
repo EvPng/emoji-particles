@@ -20,17 +20,8 @@
   box-sizing: border-box;
 }
 
-/* Column flex, not `grid` + `place-items: center`.
-   `place-items: center` opted main out of stretching, so its implicit grid
-   column was content-sized. The canvas carries an explicit pixel width from
-   resize(), that width became the column's max-content, main grew, the stage
-   grew, resize() wrote a bigger canvas, and the page inflated until it hit
-   main's max-width and overflowed the viewport. On a 375px phone it settled at
-   520px, and it only started once the font resolved and the first rebuild ran,
-   which is why it looked like the container grew as the emoji loaded.
-   In a column flex the body's inner width is viewport-derived, so main's
-   explicit `width: 100%` is a definite size that no child can inflate.
-   `safe` keeps the top reachable when content is taller than the screen. */
+/* `safe` falls back to start alignment when content is taller than the screen,
+   which keeps the top reachable. */
 
 body {
   margin: 0;
@@ -46,10 +37,8 @@ body {
 }
 
 main {
-  /* Keep the explicit 100%. It resolves against the body's inner width, which
-     is viewport-derived, so it is a definite size that content cannot inflate.
-     Leaving it out invites `stretch`, and the auto margins below cancel stretch
-     and hand the sizing back to the content. */
+  /* Must stay explicit. The canvas carries a pixel width, so any layout that
+     lets main size to its content will be inflated by it. */
   width: 100%;
   max-width: 520px;
   margin-inline: auto;
@@ -129,8 +118,8 @@ button {
 
 input {
   flex: 1 1 56px;
-  /* Without this the flex floor is the input's 20-character min-content width,
-     which forces the row to wrap long before it needs to. */
+  /* Overrides the flex floor, which would otherwise be the input's
+     20-character min-content width. */
   min-width: 56px;
   padding: 0 12px;
   text-align: center;
@@ -154,8 +143,8 @@ button:hover {
   border-color: var(--muted);
 }
 
-/* Segmented control. Both options always render, so the control's width is
-   fixed by construction and switching modes cannot reflow the row above it. */
+/* Segmented control. Both options always render, so its width does not change
+   when the mode switches. */
 
 .modes {
   display: flex;

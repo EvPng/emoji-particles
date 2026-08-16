@@ -1,13 +1,12 @@
 import { buildField, simulate, draw, firstGrapheme } from './particles.js';
 
-// Tuning copied from the 👋 on evpeng.com, which runs at a ~140px inline size.
-// Keeping dot at 0.7x the grid spacing is what makes it read as chunky pixels
-// rather than a smooth image, so the two scale together.
+// dot sits at 0.7x the grid spacing, which is what reads as chunky pixels
+// rather than a smooth image. The two scale together.
 const SITE = {
   sample: 4,
   dot: 3.5,
   radius: 60,
-  strength: 1.5, // site runs -1; pushed up here since the stage invites dragging
+  strength: 1.5, // the Push/Pull control owns the sign
   spring: 0.08,
   friction: 0.9,
 };
@@ -21,8 +20,8 @@ const SCALE = 3;
 // solid glyph from melting a phone.
 const MAX_PARTICLES = 4000;
 
-// Only the spatial values scale with the stage. strength is an acceleration and
-// spring/friction are unitless, so scaling those just overdrives the effect.
+// Only spatial values scale with the stage. strength is an acceleration and
+// spring/friction are unitless, so both stay as authored.
 const PHYSICS = {
   radius: SITE.radius * SCALE,
   strength: SITE.strength,
@@ -50,7 +49,7 @@ const pointer = { x: -9999, y: -9999 };
 let field = { particles: [], runs: [], step: 2 };
 let glyph = input.value;
 let size = { w: 0, h: 0 };
-let pull = true; // the site's 👋 runs at strength -1, which attracts
+let pull = true; // negative strength: the cursor attracts
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -147,14 +146,13 @@ function frame(now) {
   if (!reduceMotion.matches || pointer.x > -9999) {
     simulate(field.particles, pointer, { ...PHYSICS, strength: pull ? -PHYSICS.strength : PHYSICS.strength }, dt);
   }
-  // Derive the dot from the spacing actually used, so the pixel texture holds
-  // even when the safety net widened the grid.
+  // Dot follows the spacing actually used, which may be wider than requested.
   draw(ctx, field, field.spacing * (SITE.dot / SITE.sample), size.w, size.h);
   requestAnimationFrame(frame);
 }
 
-// Emoji come from a system font, so the glyph can be unavailable for a beat on
-// first paint. Waiting for fonts avoids sampling an empty or fallback shape.
+// Emoji come from a system font, so sampling has to wait for fonts to be ready
+// or it reads an empty or fallback shape.
 async function start() {
   resize();
   if (document.fonts && document.fonts.ready) await document.fonts.ready;
