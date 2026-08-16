@@ -1,12 +1,12 @@
 # Emoji Particles
 
-Type an emoji and it becomes a field of particles that scatter under the cursor and spring back.
+Type any character and it becomes a field of particles that scatter under the cursor and spring back. Emoji, symbols, and letters all work: the glyph is sampled from whatever the font draws, so nothing about it is emoji-specific.
 
 No dependencies, no build step. Three files and an `index.html`.
 
 ## How it works
 
-The emoji is drawn to an offscreen canvas and sampled on a grid. Every cell above an alpha cutoff becomes a particle that stores its home position and the RGB it was sampled from. Each frame, particles within the cursor radius take an impulse away from it (or toward it), a spring pulls them back home, and friction damps the result.
+The character is drawn to an offscreen canvas and sampled on a grid. Every cell above an alpha cutoff becomes a particle that stores its home position and the RGB it was sampled from. Each frame, particles within the cursor radius take an impulse away from it (or toward it), a spring pulls them back home, and friction damps the result.
 
 Four things in the implementation are worth naming.
 
