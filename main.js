@@ -7,7 +7,7 @@ const SITE = {
   sample: 4,
   dot: 3.5,
   radius: 60,
-  strength: 2.5, // site runs -1; pushed up here since the stage invites dragging
+  strength: 1.5, // site runs -1; pushed up here since the stage invites dragging
   spring: 0.08,
   friction: 0.9,
 };
