@@ -40,7 +40,7 @@ const canvas = document.getElementById('canvas');
 const stage = document.getElementById('stage');
 const input = document.getElementById('input');
 const shuffleBtn = document.getElementById('shuffle');
-const modeBtn = document.getElementById('mode');
+const modeBtns = [...document.querySelectorAll('.mode')];
 const countEl = document.getElementById('count');
 const emptyEl = document.getElementById('empty');
 const ctx = canvas.getContext('2d');
@@ -108,11 +108,25 @@ shuffleBtn.addEventListener('click', () => {
   setGlyph(next);
 });
 
-modeBtn.addEventListener('click', () => {
-  pull = !pull;
-  modeBtn.textContent = pull ? 'Pull' : 'Push';
-  modeBtn.setAttribute('aria-pressed', String(pull));
-});
+function setMode(mode, focus) {
+  pull = mode === 'pull';
+  for (const btn of modeBtns) {
+    const on = btn.dataset.mode === mode;
+    btn.setAttribute('aria-checked', String(on));
+    // Roving tabindex: the group is one tab stop, arrows move within it.
+    btn.tabIndex = on ? 0 : -1;
+    if (on && focus) btn.focus();
+  }
+}
+
+for (const btn of modeBtns) {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  btn.addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    setMode(pull ? 'push' : 'pull', true);
+  });
+}
 
 const ro = new ResizeObserver(() => {
   const before = size.w;

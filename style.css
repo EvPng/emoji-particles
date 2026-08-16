@@ -128,10 +128,37 @@ button:hover {
   border-color: var(--muted);
 }
 
-button[aria-pressed='true'] {
+/* Segmented control. Both options always render, so the control's width is
+   fixed by construction and switching modes cannot reflow the row above it. */
+
+.modes {
+  display: flex;
+  width: fit-content;
+  margin: 10px auto 0;
+  padding: 3px;
+  gap: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+}
+
+.mode {
+  height: 32px;
+  min-width: 76px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.mode:hover {
+  color: var(--fg);
+}
+
+.mode[aria-checked='true'] {
   background: var(--fg);
   color: var(--bg);
-  border-color: var(--fg);
 }
 
 .count {

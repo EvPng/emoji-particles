@@ -37,7 +37,29 @@
           aria-label="Emoji to render"
         />
         <button id="shuffle" type="button">Shuffle</button>
-        <button id="mode" type="button" aria-pressed="true">Pull</button>
+      </div>
+
+      <div class="modes" role="radiogroup" aria-label="Cursor force">
+        <button
+          type="button"
+          class="mode"
+          data-mode="push"
+          role="radio"
+          aria-checked="false"
+          tabindex="-1"
+        >
+          Push
+        </button>
+        <button
+          type="button"
+          class="mode"
+          data-mode="pull"
+          role="radio"
+          aria-checked="true"
+          tabindex="0"
+        >
+          Pull
+        </button>
       </div>
 
       <p class="count"><span id="count">0</span> particles</p>
