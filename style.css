@@ -43,10 +43,11 @@ header {
 }
 
 h1 {
-  margin: 0 0 4px;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.15;
 }
 
 header p {
@@ -88,8 +89,13 @@ header p {
 
 .controls {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-top: 16px;
+  /* One row at any normal width. Below ~340px the three fixed items no longer
+     fit, so the mode control drops to a second line rather than overflowing. */
+  flex-wrap: wrap;
 }
 
 input,
@@ -104,8 +110,10 @@ button {
 }
 
 input {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 56px;
+  /* Without this the flex floor is the input's 20-character min-content width,
+     which forces the row to wrap long before it needs to. */
+  min-width: 56px;
   padding: 0 12px;
   text-align: center;
   font-size: 20px;
@@ -133,19 +141,19 @@ button:hover {
 
 .modes {
   display: flex;
-  width: fit-content;
-  margin: 10px auto 0;
+  flex: none;
+  height: 40px;
   padding: 3px;
   gap: 3px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--field);
 }
 
 .mode {
-  height: 32px;
-  min-width: 76px;
-  padding: 0 14px;
+  height: 100%;
+  min-width: 58px;
+  padding: 0 10px;
   border: 0;
   border-radius: 9px;
   background: transparent;

@@ -8,6 +8,12 @@
       name="description"
       content="Type an emoji and it becomes a field of particles you can push around."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
     <link
       rel="icon"
@@ -18,7 +24,7 @@
     <main>
       <header>
         <h1>Emoji Particles</h1>
-        <p>Type an emoji, then push it around.</p>
+        <p>Turn an emoji into particles and play with it.</p>
       </header>
 
       <div id="stage">
@@ -37,29 +43,29 @@
           aria-label="Emoji to render"
         />
         <button id="shuffle" type="button">Shuffle</button>
-      </div>
 
-      <div class="modes" role="radiogroup" aria-label="Cursor force">
-        <button
-          type="button"
-          class="mode"
-          data-mode="push"
-          role="radio"
-          aria-checked="false"
-          tabindex="-1"
-        >
-          Push
-        </button>
-        <button
-          type="button"
-          class="mode"
-          data-mode="pull"
-          role="radio"
-          aria-checked="true"
-          tabindex="0"
-        >
-          Pull
-        </button>
+        <div class="modes" role="radiogroup" aria-label="Cursor force">
+          <button
+            type="button"
+            class="mode"
+            data-mode="push"
+            role="radio"
+            aria-checked="false"
+            tabindex="-1"
+          >
+            Push
+          </button>
+          <button
+            type="button"
+            class="mode"
+            data-mode="pull"
+            role="radio"
+            aria-checked="true"
+            tabindex="0"
+          >
+            Pull
+          </button>
+        </div>
       </div>
 
       <p class="count"><span id="count">0</span> particles</p>
