@@ -18,7 +18,20 @@ const ALPHA_CUTOFF = 160;
 // larger upscales and blurs them, and sampling that blur loses the detail that
 // separates, say, the fingers on a hand. So sampling always happens at native
 // size and the resulting positions are scaled up to the stage instead.
-const SOURCE = 160;
+const GLYPH_PX = 138;
+
+// Starting size of the offscreen buffer. textBaseline 'middle' centres the em
+// box, not the ink, and how far the ink sits outside that box varies by font:
+// Apple Color Emoji rasterises well past it, Noto much less. Anything that
+// overflows the buffer is cropped silently, so rather than guess a multiplier
+// that covers every font, `render` grows the buffer until no ink touches an
+// edge. The fit below rescales from measured ink, so a roomy buffer costs only
+// a larger scan.
+const BUFFER_START = GLYPH_PX * 2;
+const BUFFER_MAX = GLYPH_PX * 8;
+
+// Fraction of the stage's shorter side the ink is fitted to.
+const FIT = 0.82;
 
 /**
  * Split a string into user-perceived characters. Array.from would split by code
@@ -50,34 +63,56 @@ export function firstGrapheme(str) {
  *
  * Returns particles in stage coordinates plus the stage-space grid `spacing`.
  */
-export function buildField(glyph, width, height, sample, maxParticles, seedFrom) {
-  const off = document.createElement('canvas');
-  off.width = SOURCE;
-  off.height = SOURCE;
-  const o = off.getContext('2d', { willReadFrequently: true });
+/**
+ * Draw the glyph into a square buffer and measure its ink bounds at full
+ * resolution. Bounds taken on the sample grid instead would miss whatever ink
+ * falls between grid lines, by a different amount on each side and per glyph.
+ *
+ * Ink touching an edge means the glyph was cropped, so the buffer is doubled
+ * and the draw repeated until it fits.
+ */
+function render(glyph) {
+  let px = BUFFER_START;
 
-  o.clearRect(0, 0, SOURCE, SOURCE);
-  o.font = `${Math.floor(SOURCE * 0.86)}px ${EMOJI_FONT}`;
-  o.textAlign = 'center';
-  o.textBaseline = 'middle';
-  o.fillText(glyph, SOURCE / 2, SOURCE / 2);
+  for (;;) {
+    const off = document.createElement('canvas');
+    off.width = px;
+    off.height = px;
+    const o = off.getContext('2d', { willReadFrequently: true });
 
-  const data = o.getImageData(0, 0, SOURCE, SOURCE).data;
+    o.clearRect(0, 0, px, px);
+    o.font = `${GLYPH_PX}px ${EMOJI_FONT}`;
+    o.textAlign = 'center';
+    o.textBaseline = 'middle';
+    o.fillText(glyph, px / 2, px / 2);
 
-  // Ink bounds at full resolution. Measuring them on the sample grid instead
-  // would miss whatever ink falls between grid lines, by a different amount on
-  // each side and a different amount per glyph.
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let y = 0; y < SOURCE; y++) {
-    for (let x = 0; x < SOURCE; x++) {
-      if (data[(y * SOURCE + x) * 4 + 3] <= ALPHA_CUTOFF) continue;
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
+    const data = o.getImageData(0, 0, px, px).data;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let y = 0; y < px; y++) {
+      for (let x = 0; x < px; x++) {
+        if (data[(y * px + x) * 4 + 3] <= ALPHA_CUTOFF) continue;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
     }
+
+    const empty = maxX < minX;
+    const cropped =
+      !empty && (minX === 0 || minY === 0 || maxX === px - 1 || maxY === px - 1);
+
+    if (empty || !cropped || px >= BUFFER_MAX) {
+      return { data, px, minX, minY, maxX, maxY, empty };
+    }
+    px *= 2;
   }
-  if (maxX < minX) return { particles: [], runs: [], spacing: sample };
+}
+
+export function buildField(glyph, width, height, sample, maxParticles, seedFrom) {
+  const { data, px: BUFFER_PX, minX, minY, maxX, maxY, empty } = render(glyph);
+  if (empty) return { particles: [], runs: [], spacing: sample };
 
   const inkW = maxX - minX + 1;
   const inkH = maxY - minY + 1;
@@ -90,7 +125,7 @@ export function buildField(glyph, width, height, sample, maxParticles, seedFrom)
     let n = 0;
     for (let y = phase(minY, inkH, s); y <= maxY; y += s) {
       for (let x = phase(minX, inkW, s); x <= maxX; x += s) {
-        const i = (y * SOURCE + x) * 4;
+        const i = (y * BUFFER_PX + x) * 4;
         if (data[i + 3] <= ALPHA_CUTOFF) continue;
         n++;
         if (into) into.push({ x, y, r: data[i], g: data[i + 1], b: data[i + 2] });
@@ -122,8 +157,7 @@ export function buildField(glyph, width, height, sample, maxParticles, seedFrom)
     if (c.y > cMaxY) cMaxY = c.y;
   }
 
-  const scale =
-    Math.min(width / SOURCE, height / SOURCE) * (SOURCE / Math.max(inkW, inkH)) * 0.82;
+  const scale = (Math.min(width, height) * FIT) / Math.max(inkW, inkH);
   const spacing = step * scale;
   const originX = width / 2 - ((cMinX + cMaxX) / 2) * scale;
   const originY = height / 2 - ((cMinY + cMaxY) / 2) * scale;
